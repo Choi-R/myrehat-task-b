@@ -46,6 +46,15 @@ export async function processConciergeMessage(
   };
 }
 
+export async function GET() {
+  return Response.json({
+    status: "ok",
+    endpoint: "/api/webhooks/waha",
+    method: "POST",
+    message: "WAHA Concierge webhook is active. Send POST with { event, payload: { from, body } }",
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();

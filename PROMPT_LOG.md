@@ -119,3 +119,22 @@ Hasil eksekusi test suite:
 turbo run check-types
 # 6 successful, 6 total (0 error)
 ```
+
+
+---
+
+### 6. Update F1-F4 Refinement & Reviewer Feedback
+Berdasarkan verifikasi reviewer:
+1. **Halaman `/listings` & `/list` (F1)**:
+   - Dibuat dedicated page di `apps/web/src/app/listings/page.tsx` dan `apps/web/src/app/list/page.tsx`.
+   - Menampilkan list listing BuyHomestay lengkap dengan filter 4 kategori, pencarian, dan tautan kontak WhatsApp.
+   - Ditambahkan tautan navigasi `Listings` pada header navbar (`apps/web/src/components/header.tsx`).
+2. **Webhook WAHA Concierge (F2)**:
+   - Diperkuat di `apps/web/src/app/api/webhooks/waha/route.ts` dan `apps/server/src/index.ts` untuk melayani GET (status info) dan POST (WAHA payload processing).
+3. **AI Polish Listing (F3) & AI Chat**:
+   - Dibuat endpoint `POST /api/polish` di `apps/web/src/app/api/polish/route.ts`.
+   - Ditambahkan tombol interaktif `Poles dengan AI (F3)` pada form listing BuyHomestay.
+   - Diperbarui endpoint `/ai` di Elysia server agar menyediakan fallback streaming dan tidak error jika key external belum diisi.
+4. **Verifikasi**:
+   - `bunx vitest run`: 11 tests passed (100% hijau).
+   - `turbo run check-types`: bersih tanpa error.

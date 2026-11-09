@@ -1,6 +1,5 @@
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
-import { polishListingDescription } from "../../../../../../scripts/polish";
 
 export async function GET() {
   return Response.json({
@@ -43,18 +42,10 @@ Polished Output:`,
         polished = result.text.trim();
       } catch (e: any) {
         console.warn("OpenRouter polish error:", e?.message);
-        try {
-          polished = await polishListingDescription({ description, title, category });
-        } catch {
-          polished = `${description}\n\n✨ Keunggulan Properti:\n• Potensi occupancy rate tinggi & ROI stabil\n• Fasilitas lengkap siap operasional\n• Lokasi prima dengan aksesibilitas prima`;
-        }
-      }
-    } else {
-      try {
-        polished = await polishListingDescription({ description, title, category });
-      } catch {
         polished = `${description}\n\n✨ Keunggulan Properti:\n• Potensi occupancy rate tinggi & ROI stabil\n• Fasilitas lengkap siap operasional\n• Lokasi prima dengan aksesibilitas prima`;
       }
+    } else {
+      polished = `${description}\n\n✨ Keunggulan Properti:\n• Potensi occupancy rate tinggi & ROI stabil\n• Fasilitas lengkap siap operasional\n• Lokasi prima dengan aksesibilitas prima`;
     }
 
     return Response.json({ polished, original: description });

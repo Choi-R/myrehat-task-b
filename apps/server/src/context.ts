@@ -9,9 +9,14 @@ export type CreateContextOptions = {
 };
 
 export async function createContext({ context }: CreateContextOptions): Promise<ApiContext> {
-  const session = await auth.api.getSession({
-    headers: context.request.headers,
-  });
+  let session = null;
+  try {
+    session = await auth.api.getSession({
+      headers: context.request.headers,
+    });
+  } catch (err: any) {
+    console.warn("Could not retrieve session:", err?.message);
+  }
   return {
     db,
     session,

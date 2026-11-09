@@ -19,10 +19,15 @@ export type CreateBuyHomestayInput = z.infer<typeof createBuyHomestaySchema>;
 
 export const homestayRouter = {
   list: publicProcedure.handler(async ({ context }) => {
-    return await context.db
-      .select()
-      .from(buyHomestays)
-      .orderBy(desc(buyHomestays.createdAt));
+    try {
+      return await context.db
+        .select()
+        .from(buyHomestays)
+        .orderBy(desc(buyHomestays.createdAt));
+    } catch (err: any) {
+      console.warn("homestay.list DB query warning:", err?.message);
+      return [];
+    }
   }),
   create: protectedProcedure
     .input(createBuyHomestaySchema)

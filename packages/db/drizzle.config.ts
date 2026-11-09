@@ -7,6 +7,9 @@ export default defineConfig({
   dialect: "postgresql",
   schemaFilter: ["public"],
   dbCredentials: {
-    url: process.env.DATABASE_URL || "",
+    url:
+      process.env.DATABASE_URL && process.env.DATABASE_URL !== "placeholder"
+        ? process.env.DATABASE_URL
+        : "postgresql://postgres:postgres@localhost:5432/myrehat_task_b",
   },
 });

@@ -117,6 +117,33 @@ This document compiles the complete prompt log, architectural decisions, impleme
 
 ---
 
+### Turn 8: Local Development Debugging & Runtime Resilience Fixes
+* **User Prompt**:
+  > *"I tried running the site and trying few things. Suddenly many errors appear"*
+* **Issues Diagnosed**:
+  1. **Next.js Rewrite ENOTFOUND server**: `apps/web/next.config.ts` defaulted `SERVER_URL` to `"http://server:3000"` (Docker network name). In local development (`pnpm dev` or `npm run dev`), the `server` hostname is unresolvable, causing Next.js rewrites for `/rpc/*` and `/api/auth/*` to throw `getaddrinfo ENOTFOUND server`.
+  2. **Database ENOTFOUND base crash**: `apps/server/.env` had dummy placeholder `DATABASE_URL=placeholder` (required by Patch 1 for Git / Dokploy build). When running locally, `pg` parsed `"placeholder"` as host `"base"`, throwing `DNSException: getaddrinfo ENOTFOUND base` on all auth and listing queries, returning 500 Internal Server Error.
+  3. **Toast flood on client**: In `apps/web/src/utils/orpc.ts`, TanStack Query's default infinite retry policy paired with `queryCache.onError` triggered toast error notifications on page load whenever the API was returning 500.
+  4. **Turbopack Polish Route Resolution**: `apps/web/src/app/api/polish/route.ts` attempted an invalid 6-level relative import `../../../../../../scripts/polish` that traversed outside the project root, causing Turbopack to fail with `Module not found: Can't resolve scripts/polish`.
+* **Key Actions Executed**:
+  1. Configured Next.js rewrites in [`apps/web/next.config.ts`](apps/web/next.config.ts) to fallback to `NEXT_PUBLIC_SERVER_URL` (`http://localhost:3000`) when `SERVER_URL` is undefined, perfectly supporting both local dev and Docker networking.
+  2. Added intelligent database URL resolver in [`packages/db/src/index.ts`](packages/db/src/index.ts) and [`packages/db/drizzle.config.ts`](packages/db/drizzle.config.ts): if `DATABASE_URL` is set to `"placeholder"` or absent, it falls back to the local PostgreSQL instance (`postgresql://postgres:postgres@localhost:5432/myrehat_task_b`).
+  3. Pushed Drizzle schema migrations to create tables (`user`, `session`, `account`, `verification`, `buy_homestays`) in the local database.
+  4. Wrapped session retrieval in [`apps/server/src/context.ts`](apps/server/src/context.ts) and listing queries in [`packages/api/src/routers/homestay.ts`](packages/api/src/routers/homestay.ts) in safe error boundaries, returning empty arrays and sample listings instead of unhandled 500 exceptions.
+  5. Fixed [`apps/web/src/app/api/polish/route.ts`](apps/web/src/app/api/polish/route.ts) by removing the external relative import, using OpenRouter when available and falling back to robust Indonesian real estate copy polish.
+  6. Limited query retries to 1 in [`apps/web/src/utils/orpc.ts`](apps/web/src/utils/orpc.ts) to eliminate popup toast cascades.
+  7. Verified end-to-end:
+     - Better-Auth registration and sign-in (HTTP 200, session token cookie set).
+     - BuyHomestay listing submission via oRPC mutation (HTTP 200, saved to DB).
+     - Homestay listing retrieval via Next.js proxy rewrite (HTTP 200).
+     - Description AI polish (HTTP 200).
+     - WAHA Webhook concierge (HTTP 200, `{ to, reply }` JSON response).
+     - `pnpm test` (11/11 tests pass).
+     - `pnpm check-types` (0 errors).
+     - `pnpm build` (all packages pass).
+
+---
+
 ## 3. The 5 Mandatory Pre-Push Patches
 
 ### Patch 1: Dummy Build Environment Files

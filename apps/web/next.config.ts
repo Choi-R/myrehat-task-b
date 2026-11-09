@@ -9,7 +9,10 @@ const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["shiki"],
   async rewrites() {
-    const serverUrl = process.env.SERVER_URL || "http://server:3000";
+    const serverUrl =
+      process.env.SERVER_URL ||
+      process.env.NEXT_PUBLIC_SERVER_URL ||
+      "http://localhost:3000";
     return [
       {
         source: "/rpc/:path*",

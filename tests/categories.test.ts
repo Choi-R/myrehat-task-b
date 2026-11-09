@@ -31,6 +31,22 @@ describe("F1: BuyHomestay Category Validation", () => {
     expect(result.success).toBe(false);
   });
 
+  it("harus menolak kategori ke-5 di luar 4 kategori resmi (misal: 'Buy Villa')", () => {
+    const fifthCategory = "Buy Villa";
+    const result = buyHomestayCategorySchema.safeParse(fifthCategory);
+    expect(result.success).toBe(false);
+
+    const listingWithFifthCategory = {
+      title: "Villa Jogja Asri",
+      price: "1500000000",
+      location: "Yogyakarta",
+      category: fifthCategory,
+      whatsappContact: "6281234567890",
+    };
+    const parsed = createBuyHomestaySchema.safeParse(listingWithFifthCategory);
+    expect(parsed.success).toBe(false);
+  });
+
   it("harus memvalidasi seluruh input form listing BuyHomestay dengan sukses", () => {
     const validListing = {
       title: "Villa Jogja Asri",
